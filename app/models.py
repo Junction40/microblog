@@ -1,4 +1,4 @@
-from app import login
+from app import login, db, app
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timezone
 from typing import Optional
@@ -7,6 +7,8 @@ import sqlalchemy.orm as so # Support for using models
 from app import db
 from flask_login import UserMixin
 from hashlib import md5
+from time import time
+import jwt
 
 followers = sa.Table(
     'followers',
@@ -97,6 +99,25 @@ class User(UserMixin, db.Model):
             # Ordering posts by most recent
             .order_by(Post.timestamp.desc())
         )
+    
+    # Returns a JSON Web Token (JWT) as a string
+    # jwt.encode params: payload, secret_key, algorithm
+    def get_reset_password_token(self, expires_in=600):
+        return jwt.encode(
+            {'reset_password': self.id, 'exp': time() + expires_in},
+            app.config['SECRET_KEY'], algorithm='HS256')
+    
+    # Decodes JSON Web Token (JWT) 
+    # If the token is valid, then the value of the reset_password key from the token's payload is the ID of the user, so user can be loaded and returned 
+    # Static method allows it to be invoked directly from the class
+    @staticmethod
+    def verify_reset_password_token(token):
+        try:
+            id = jwt.decode(token, app.config['SECRET_KEY'],
+                            algorithms=['HS256'])['reset_password']
+        except:
+            return
+        return db.session.get(User, id)
         
 class Post(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
