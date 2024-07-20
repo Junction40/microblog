@@ -7,6 +7,7 @@ from flask_mail import Mail
 import logging
 from logging.handlers import SMTPHandler
 from logging.handlers import RotatingFileHandler
+from flask_moment import Moment
 import os
 
 app = Flask(__name__) # Flask application instance
@@ -16,6 +17,7 @@ migrate = Migrate(app, db) # Initialising the Flask-Migrate extension with your 
 login = LoginManager(app) # Initialising the login manager right after the application instance
 login.login_view = 'login' # 'login' is the fu nction (or endpoint) name for the login view
 mail = Mail(app) # Flask mail for sending emails / pyjwt to generate secture tokens (JSON Web Tokens) for password reset links
+moment = Moment(app) # JS library that convertsfrom UTC to local timezone in the browser, using JavaScript (works together with moment.js)
 
 if not app.debug:
     if app.config['MAIL_SERVER']:
