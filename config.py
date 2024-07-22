@@ -21,3 +21,6 @@ class Config:
     
     # For pagination
     POSTS_PER_PAGE = 25
+    
+    # For translation
+    LANGUAGES = ['en', 'es']

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -8,8 +8,15 @@ import logging
 from logging.handlers import SMTPHandler
 from logging.handlers import RotatingFileHandler
 from flask_moment import Moment
+from flask_babel import Babel
 import os
 
+
+def get_locale():
+    # accept_languages is an attribute of Flask's request object 
+    # accept_languages header specifies the client language and locale preferences as a weighted list
+    # return 'es' to try spanish
+    return request.accept_languages.best_match(app.config['LANGUAGES'])
 app = Flask(__name__) # Flask application instance
 app.config.from_object(Config)
 db = SQLAlchemy(app) # Initialising the SQLAlchemy extension with the Flask application
@@ -18,6 +25,7 @@ login = LoginManager(app) # Initialising the login manager right after the appli
 login.login_view = 'login' # 'login' is the fu nction (or endpoint) name for the login view
 mail = Mail(app) # Flask mail for sending emails / pyjwt to generate secture tokens (JSON Web Tokens) for password reset links
 moment = Moment(app) # JS library that convertsfrom UTC to local timezone in the browser, using JavaScript (works together with moment.js)
+babel = Babel(app, locale_selector=get_locale) # Babel instance initialised a locale_selector, which is set to the get_locale function invoked on each request
 
 if not app.debug:
     if app.config['MAIL_SERVER']:
