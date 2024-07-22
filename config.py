@@ -22,5 +22,9 @@ class Config:
     # For pagination
     POSTS_PER_PAGE = 25
     
-    # For translation
+    # Language options
     LANGUAGES = ['en', 'es']
+    
+    # Microsoft Azure translator key 
+    # https://portal.azure.com/
+    MS_TRANSLATOR_KEY = os.environ.get('MS_TRANSLATOR_KEY')

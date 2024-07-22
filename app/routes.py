@@ -9,7 +9,8 @@ from app.forms import LoginForm, RegistrationForm, EditProfileForm, \
     EmptyForm, PostForm, ResetPasswordRequestForm, ResetPasswordForm
 from app.models import User, Post
 from app.email import send_password_reset_email
-
+from langdetect import detect, LangDetectException
+from app.translate import translate
 
 @app.before_request
 def before_request():
@@ -25,11 +26,16 @@ def before_request():
 def index():
     form = PostForm()
     if form.validate_on_submit():
-        post = Post(body=form.post.data, author=current_user)
+        try:
+            language = detect(form.post.data)
+        except LangDetectException:
+            language = ''
+        post = Post(body=form.post.data, author=current_user, language=language)
         db.session.add(post)
         db.session.commit()
         flash(_('Your post is now live!'))
         return redirect(url_for('index'))
+    
     page = request.args.get('page', 1, type=int)
     posts = db.paginate(current_user.following_posts(), page=page,
                         per_page=app.config['POSTS_PER_PAGE'], error_out=False)
@@ -37,9 +43,7 @@ def index():
         if posts.has_next else None
     prev_url = url_for('index', page=posts.prev_num) \
         if posts.has_prev else None
-    return render_template('index.html', title=_('Home'), form=form,
-                           posts=posts.items, next_url=next_url,
-                           prev_url=prev_url)
+    return render_template('index.html', title=_('Home'), form=form, posts=posts.items, next_url=next_url, prev_url=prev_url)
 
 
 @app.route('/explore')
@@ -206,3 +210,16 @@ def unfollow(username):
         return redirect(url_for('user', username=username))
     else:
         return redirect(url_for('index'))
+
+# Returns data instead of HTML/redirect 
+@app.route('/translate', methods=['POST'])
+@login_required
+def translate_text():
+    # request.get_json() method returns a dictionary with data that the client has submitted in JSON format
+    data = request.get_json()
+    # Invokes thew the translate function from translate.py, passing the three arguments directly from the JSON data that was submitted with the request
+    # The result is incorporated into a dictionary with a single key called text, which is returned as the response
+    # Flask automatically dictionaries returned by view functions to the JSON format
+    return {'text': translate(data['text'],
+                              data['source_language'],
+                              data['dest_language'])}

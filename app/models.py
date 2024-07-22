@@ -33,13 +33,15 @@ class User(UserMixin, db.Model):
     following: so.WriteOnlyMapped['User'] = so.relationship(
         secondary=followers, primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
-        back_populates='followers')
+        back_populates='followers',
+        passive_deletes=True)
     followers: so.WriteOnlyMapped['User'] = so.relationship(
         secondary=followers, primaryjoin=(followers.c.followed_id == id),
         secondaryjoin=(followers.c.follower_id == id),
-        back_populates='following')
+        back_populates='following',
+        passive_deletes=True)
     
-    posts: so.WriteOnlyMapped['Post'] = so.relationship(back_populates='author') # This is not an actual database field, but a high-level view of the relationship between users and posts, and for that reason it isn't in the database diagram
+    posts: so.WriteOnlyMapped['Post'] = so.relationship(back_populates='author', passive_deletes=True) # This is not an actual database field, but a high-level view of the relationship between users and posts, and for that reason it isn't in the database diagram
     
     # Generates a password hash for the current/'self' user's input password
     def set_password(self, password):
@@ -124,6 +126,7 @@ class Post(db.Model):
     body: so.Mapped[str] = so.mapped_column(sa.String(140))
     timestamp: so.Mapped[datetime] = so.mapped_column(index=True, default=lambda: datetime.now(timezone.utc))
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
+    language: so.Mapped[Optional[str]] = so.mapped_column(sa.String(5))
 
     author: so.Mapped[User] = so.relationship(back_populates='posts') # These two attributes (This and User.posts) allow the application to access the connected user and post entries
 
