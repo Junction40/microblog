@@ -17,6 +17,7 @@ def get_locale():
     # accept_languages header specifies the client language and locale preferences as a weighted list
     # return 'es' to try spanish
     return request.accept_languages.best_match(app.config['LANGUAGES'])
+
 app = Flask(__name__) # Flask application instance
 app.config.from_object(Config)
 db = SQLAlchemy(app) # Initialising the SQLAlchemy extension with the Flask application
