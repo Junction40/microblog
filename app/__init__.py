@@ -25,7 +25,7 @@ mail = Mail() # Flask mail for sending emails / pyjwt to generate secture tokens
 moment = Moment() # JS library that convertsfrom UTC to local timezone in the browser, using JavaScript (works together with moment.js)
 babel = Babel() # Babel instance initialised a locale_selector, which is set to the get_locale function invoked on each request
 
-
+# By pusing an application context, it brings 'current_app' and 'g' to life
 def create_app(config_class=Config):
     app = Flask(__name__) # Flask application instance
     app.config.from_object(config_class)

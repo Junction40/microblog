@@ -1,18 +1,24 @@
-import os
-# By setting the DATABSE_URL to sqlite:// it prevents unit tests from using the regular database
-os.environ['DATABASE_URL'] = 'sqlite://'
-
+#!/usr/bin/env python
 from datetime import datetime, timezone, timedelta
 import unittest
-from app import app, db
+from app import create_app, db
 from app.models import User, Post
+from config import Config
+
+# Subclass of the application's Config class (overrides the SQLAlchemy config to use an in-memory SQLite database)
+class TestConfig(Config):
+    # Useful when the application needs to determine if it is running under unit tests or not
+    TESTING = True
+    # By setting the DATABSE_URL to sqlite:// it prevents unit tests from using the regular database
+    SQLALCHEMY_DATABASE_URI = 'sqlite://'
 
 
 class UserModelCase(unittest.TestCase):
     # Creates application context and pushes it
     # Ensures that the Flask application instance, along with its configuration data is accessible to Flask extensions
     def setUp(self):
-        self.app_context = app.app_context()
+        self.app = create_app(TestConfig)
+        self.app_context = self.app.app_context()
         self.app_context.push()
         # Quick way to create a database from scratch that is useful for testing
         db.create_all()
