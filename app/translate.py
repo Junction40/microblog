@@ -1,16 +1,16 @@
 import requests
 from flask_babel import _
-from app import app
+from flask import current_app
 
 def translate(text, source_language, dest_language):
     # Checks if there is a key for the translation service in the config else return error string
-    if 'MS_TRANSLATOR_KEY' not in app.config or \
-            not app.config['MS_TRANSLATOR_KEY']:
+    if 'MS_TRANSLATOR_KEY' not in current_app.config or \
+            not current_app.config['MS_TRANSLATOR_KEY']:
         return _('Error: the translation service is not configured.')
     
     # To authenticate with the service the key and region of the translator resource needs to be provided in the header with the following names:
     auth = {
-        'Ocp-Apim-Subscription-Key': app.config['MS_TRANSLATOR_KEY'],
+        'Ocp-Apim-Subscription-Key': current_app.config['MS_TRANSLATOR_KEY'],
         'Ocp-Apim-Subscription-Region': 'uksouth',
     }
     

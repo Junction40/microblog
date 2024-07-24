@@ -1,10 +1,10 @@
-from app import login, db, app
+from app import login, db
+from flask import current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timezone
 from typing import Optional
 import sqlalchemy as sa # General purpose database functions and classes such as types and query building helpers
 import sqlalchemy.orm as so # Support for using models
-from app import db
 from flask_login import UserMixin
 from hashlib import md5
 from time import time
@@ -107,7 +107,7 @@ class User(UserMixin, db.Model):
     def get_reset_password_token(self, expires_in=600):
         return jwt.encode(
             {'reset_password': self.id, 'exp': time() + expires_in},
-            app.config['SECRET_KEY'], algorithm='HS256')
+            current_app.config['SECRET_KEY'], algorithm='HS256')
     
     # Decodes JSON Web Token (JWT) 
     # If the token is valid, then the value of the reset_password key from the token's payload is the ID of the user, so user can be loaded and returned 
@@ -115,7 +115,7 @@ class User(UserMixin, db.Model):
     @staticmethod
     def verify_reset_password_token(token):
         try:
-            id = jwt.decode(token, app.config['SECRET_KEY'],
+            id = jwt.decode(token, current_app.config['SECRET_KEY'],
                             algorithms=['HS256'])['reset_password']
         except:
             return
